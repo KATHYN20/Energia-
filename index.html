@@ -1,691 +1,272 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Energia+ | Monitoramento e Previsão de Consumo Elétrico</title>
-  <link rel="stylesheet" href="style.css">
-  <script src="https://cdn.jsdelivr.net/npm/chart.js" defer></script>
-  <script src="script.js" defer></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Energia+ | Monitoramento Inteligente</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --bg-base: #121212;
+            --bg-surface: #1E1E1E;
+            --bg-surface-hover: #2a2a2a;
+            --primary-color: #10B981;
+            --primary-hover: #059669;
+            --secondary-color: #3B82F6;
+            --alert-warning: #F59E0B;
+            --alert-danger: #EF4444;
+            --text-primary: #F9FAFB;
+            --text-secondary: #9CA3AF;
+            --border-color: #374151;
+            --focus-ring: #10B981;
+            --radius-md: 8px;
+            --radius-lg: 12px;
+            --transition: all 0.3s ease;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; background-color: var(--bg-base); color: var(--text-primary); line-height: 1.6; -webkit-font-smoothing: antialiased; }
+        *:focus-visible { outline: 3px solid var(--focus-ring); outline-offset: 2px; }
+        .visually-hidden { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
+        h1, h2, h3 { color: var(--text-primary); font-weight: 600; }
+        h2 { font-size: 1.25rem; margin-bottom: 1rem; }
+        .header { background-color: var(--bg-surface); border-bottom: 1px solid var(--border-color); padding: 1rem; position: sticky; top: 0; z-index: 100; }
+        .header-container { max-width: 1200px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; }
+        .logo { display: flex; align-items: center; gap: 0.5rem; font-size: 1.5rem; color: var(--primary-color); }
+        .header-controls { display: flex; align-items: center; gap: 1.5rem; }
+        .status-indicator { display: flex; align-items: center; gap: 0.5rem; font-size: 0.875rem; color: var(--text-secondary); }
+        .status-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+        .status-dot.online { background-color: var(--primary-color); box-shadow: 0 0 8px var(--primary-color); }
+        .status-dot.listening { background-color: var(--alert-warning); box-shadow: 0 0 8px var(--alert-warning); animation: pulse 1s infinite alternate; }
+        @keyframes pulse { from { transform: scale(1); opacity: 0.8; } to { transform: scale(1.3); opacity: 1; } }
+        .main-content { max-width: 1200px; margin: 2rem auto; padding: 0 1rem; display: flex; flex-direction: column; gap: 2rem; }
+        .dashboard-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; }
+        .card { background-color: var(--bg-surface); border-radius: var(--radius-lg); padding: 1.5rem; border: 1px solid var(--border-color); transition: var(--transition); }
+        .card:hover { border-color: var(--primary-color); }
+        .card-title { font-size: 1rem; color: var(--text-secondary); margin-bottom: 0.5rem; }
+        .card-value { font-size: 2rem; font-weight: 700; margin-bottom: 0.25rem; }
+        .unit { font-size: 1.125rem; font-weight: 500; color: var(--text-secondary); }
+        .card-subtitle { font-size: 0.875rem; color: var(--text-secondary); }
+        .text-alert { color: var(--alert-warning); }
+        .variation-up { color: var(--alert-danger); }
+        .card-eco { border-left: 4px solid var(--primary-color); }
+        .chart-section { background-color: var(--bg-surface); border-radius: var(--radius-lg); padding: 1.5rem; border: 1px solid var(--border-color); }
+        .chart-container { position: relative; height: 300px; width: 100%; }
+        .bottom-grid { display: grid; grid-template-columns: 1fr; gap: 1.5rem; }
+        @media (min-width: 768px) { .bottom-grid { grid-template-columns: 1.2fr 1fr; } }
+        .ai-assistant, .simulation-form { background-color: var(--bg-surface); border-radius: var(--radius-lg); padding: 1.5rem; border: 1px solid var(--border-color); }
+        .ai-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
+        .ai-content { background-color: rgba(16, 185, 129, 0.1); border-left: 4px solid var(--primary-color); padding: 1rem; border-radius: 0 var(--radius-md) var(--radius-md) 0; font-size: 0.95rem; }
+        .form-group { margin-bottom: 1rem; }
+        label { display: block; margin-bottom: 0.5rem; font-size: 0.9rem; color: var(--text-secondary); }
+        input, select { width: 100%; padding: 0.75rem; background-color: var(--bg-base); border: 1px solid var(--border-color); color: var(--text-primary); border-radius: var(--radius-md); font-size: 1rem; transition: var(--transition); }
+        input:focus, select:focus { border-color: var(--primary-color); outline: none; box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2); }
+        button { cursor: pointer; border: none; font-family: inherit; font-weight: 600; border-radius: var(--radius-md); display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; transition: var(--transition); }
+        .btn-primary { background-color: var(--primary-color); color: var(--bg-base); padding: 0.5rem 1rem; font-size: 0.9rem; }
+        .btn-primary:hover { background-color: var(--primary-hover); }
+        .btn-submit { width: 100%; background-color: var(--secondary-color); color: white; padding: 0.75rem; margin-top: 0.5rem; font-size: 1rem; }
+        .btn-submit:hover { background-color: #2563EB; }
+        .btn-voice { background-color: transparent; color: var(--primary-color); border: 1px solid var(--primary-color); padding: 0.5rem 1rem; }
+        .btn-voice:hover { background-color: rgba(16, 185, 129, 0.1); }
+        .btn-voice.listening { background-color: var(--alert-warning); color: var(--bg-base); border-color: var(--alert-warning); }
+        .simulation-result { margin-top: 1rem; font-weight: bold; color: var(--alert-warning); }
+    </style>
 </head>
 <body>
-  <a href="#conteudo-principal" class="skip-link">Pular para o conteúdo principal</a>
-
-  <header class="app-header" role="banner">
-    <div class="header-container">
-      <div class="brand">
-        <h1>Energia<span class="brand-accent">+</span></h1>
-      </div>
-      
-      <div class="system-status" aria-live="polite">
-        <span class="status-indicator online" aria-hidden="true"></span>
-        <span class="status-text">Status: <strong>Sistema Ativo</strong></span>
-      </div>
-
-      <div class="accessibility-controls">
-        <button id="btn-voice-command" class="btn btn-voice" aria-label="Ativar comando de voz para controle por fala" aria-pressed="false">
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="22"/></svg>
-          <span id="voice-btn-text">Comando por Voz</span>
-        </button>
-      </div>
-    </div>
-  </header>
-
-  <main id="conteudo-principal" class="app-main" role="main">
-    <!-- Seção de Alertas em Tempo Real (H1, H5) -->
-    <section aria-label="Alertas do sistema">
-      <div id="voice-feedback" class="voice-feedback-banner hidden" aria-live="assertive" role="alert">
-        <p id="voice-feedback-text">Aguardando comando...</p>
-      </div>
-    </section>
-
-    <!-- Cards Resumo (Painel Principal) -->
-    <section class="dashboard-grid" aria-label="Resumo do consumo e estimativas">
-      <article class="card">
-        <header class="card-header">
-          <h2>Consumo Acumulado</h2>
-        </header>
-        <div class="card-body">
-          <p class="metric-value" id="kwh-acumulado">185 <span class="unit">kWh</span></p>
-          <p class="metric-subtext">Valor acumulado: <strong id="brl-acumulado">R$ 157,25</strong></p>
+    <header class="header">
+        <div class="header-container">
+            <h1 class="logo">
+                <span class="logo-icon" aria-hidden="true">⚡</span>Energia+
+            </h1>
+            <div class="header-controls">
+                <div class="status-indicator" role="status" aria-live="polite" id="system-status">
+                    <span class="status-dot online"></span> Sistema Ativo
+                </div>
+                <button id="btn-voice-command" class="btn-voice" aria-label="Ativar comando de voz. Fale: Qual o valor da minha fatura?">
+                    <svg aria-hidden="true" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"></path>
+                        <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+                        <line x1="12" y1="19" x2="12" y2="23"></line>
+                        <line x1="8" y1="23" x2="16" y2="23"></line>
+                    </svg>
+                    <span>Comando de Voz</span>
+                </button>
+            </div>
         </div>
-      </article>
+    </header>
 
-      <article class="card card-alert">
-        <header class="card-header">
-          <h2>Estimativa da Fatura</h2>
-        </header>
-        <div class="card-body">
-          <p class="metric-value" id="fatura-estimada">R$ 298,50</p>
-          <p class="metric-subtext warning-text">▲ 8% acima da média projetada</p>
-        </div>
-      </article>
+    <main class="main-content">
+        <section class="dashboard-cards" aria-labelledby="cards-title">
+            <h2 id="cards-title" class="visually-hidden">Resumo de Consumo</h2>
+            <article class="card">
+                <h3 class="card-title">Consumo Atual (Mês)</h3>
+                <div class="card-value" id="current-consumption">142 <span class="unit">kWh</span></div>
+                <div class="card-subtitle">R$ 134,90 acumulados</div>
+            </article>
+            <article class="card">
+                <h3 class="card-title">Estimativa da Fatura</h3>
+                <div class="card-value text-alert" id="estimated-bill">R$ 210,50</div>
+                <div class="card-subtitle variation-up">
+                    <span aria-hidden="true">↑</span> +5% em relação ao mês anterior
+                </div>
+            </article>
+            <article class="card card-eco">
+                <h3 class="card-title">Impacto Ambiental</h3>
+                <div class="card-value">12 <span class="unit">kg CO₂</span></div>
+                <div class="card-subtitle">Evitados. 15 kWh economizados!</div>
+            </article>
+        </section>
 
-      <article class="card card-eco">
-        <header class="card-header">
-          <h2>Impacto Ambiental (ODS 13)</h2>
-        </header>
-        <div class="card-body">
-          <p class="metric-value" id="co2-reducao">14,2 <span class="unit">kg CO₂</span></p>
-          <p class="metric-subtext eco-text">Economia projetada: <strong id="kwh-economizado">28 kWh</strong></p>
-        </div>
-      </article>
-    </section>
+        <section class="chart-section" aria-labelledby="chart-title">
+            <h2 id="chart-title">Histórico e Projeção de Consumo</h2>
+            <div class="chart-container">
+                <canvas id="consumptionChart" aria-label="Gráfico de linha mostrando o consumo real versus a projeção até o fim do mês" role="img"></canvas>
+            </div>
+        </section>
 
-    <!-- Visualização Gráfica -->
-    <section class="chart-section" aria-label="Gráfico de consumo real e projetado">
-      <header class="section-header">
-        <h2>Histórico e Projeção Preditiva</h2>
-        <p>Acompanhe o consumo diário e a tendência calculada para os próximos dias.</p>
-      </header>
-      <div class="chart-container">
-        <canvas id="consumptionChart" role="img" aria-label="Gráfico de linha mostrando o consumo acumulado diário em kWh e a projeção até o final do mês"></canvas>
-      </div>
-    </section>
+        <div class="bottom-grid">
+            <section class="ai-assistant" aria-labelledby="ai-title">
+                <header class="ai-header">
+                    <h2 id="ai-title">Assistente Energia+</h2>
+                    <button id="btn-read-aloud" class="btn-primary" aria-label="Ouvir dica do assistente de inteligência artificial">
+                        <svg aria-hidden="true" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+                            <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+                        </svg>
+                        Ouvir Relato
+                    </button>
+                </header>
+                <div class="ai-content" aria-live="polite" id="ai-message">
+                    <p><strong>Dica de Otimização:</strong> Identificamos um pico de consumo de energia às 19h nos últimos 3 dias. Evite usar o chuveiro elétrico no modo "Inverno" e a máquina de lavar simultaneamente neste horário para reduzir sua estimativa em até R$ 15,00.</p>
+                </div>
+            </section>
 
-    <!-- Assistente por Voz e Orientações (Eixo Multimodal) -->
-    <section class="ai-assistant-section" aria-label="Assistente de Inteligência Artificial">
-      <div class="ai-card">
-        <div class="ai-header">
-          <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="ai-icon" aria-hidden="true"><path d="M12 2a10 10 0 1 0 10 10H12V2z"/><path d="M12 12L2.5 7.5"/><path d="m12 12 8.5-4.5"/></svg>
-          <h2>Assistente de Eficiência Energética</h2>
+            <section class="simulation-form" aria-labelledby="form-title">
+                <h2 id="form-title">Simulação Rápida</h2>
+                <form id="simulator" onsubmit="event.preventDefault();">
+                    <div class="form-group">
+                        <label for="appliance">Eletrodoméstico</label>
+                        <select id="appliance" name="appliance" required>
+                            <option value="">Selecione...</option>
+                            <option value="ar-condicionado">Ar-condicionado (1200W)</option>
+                            <option value="chuveiro">Chuveiro Elétrico (5500W)</option>
+                            <option value="ferro">Ferro de Passar (1000W)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="hours">Horas de uso diário extra</label>
+                        <input type="number" id="hours" name="hours" min="1" max="24" required aria-describedby="hours-desc">
+                        <span id="hours-desc" class="visually-hidden">Informe de 1 a 24 horas</span>
+                    </div>
+                    <button type="submit" class="btn-submit">Calcular Impacto</button>
+                </form>
+                <div id="simulation-result" class="simulation-result" aria-live="assertive"></div>
+            </section>
         </div>
-        <div class="ai-body">
-          <p id="ai-suggestion-text" class="ai-text" aria-live="polite">
-            Identificamos um pico de consumo entre 18h e 21h nos últimos 3 dias. Recomendamos otimizar a temperatura do ar-condicionado em 23°C e evitar o uso concomitante do chuveiro elétrico. Isso reduzirá sua fatura estimada em até R$ 34,00 e diminuirá sua pegada de carbono.
-          </p>
-        </div>
-        <div class="ai-footer">
-          <button id="btn-read-ai" class="btn btn-secondary" aria-label="Ouvir sugestão da assistente em áudio">
-            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
-            Ouvir Relato
-          </button>
-        </div>
-      </div>
-    </section>
+    </main>
 
-    <!-- Formulário de Simulação Rápida -->
-    <section class="simulation-section" aria-label="Simulação e entrada de dados">
-      <header class="section-header">
-        <h2>Simulação Rápida de Consumo</h2>
-        <p>Insira dados de uso para recalcular instantaneamente a fatura estimada.</p>
-      </header>
-      
-      <form id="simulation-form" class="simulation-form" aria-describedby="form-instructions">
-        <p id="form-instructions" class="sr-only">Ajuste os valores de consumo para atualizar as previsões no painel principal.</p>
-        
-        <div class="form-group">
-          <label for="appliance-select">Aparelho Residencial:</label>
-          <select id="appliance-select" name="appliance" class="form-control">
-            <option value="1.5">Ar-Condicionado 12.000 BTU (1.5 kW)</option>
-            <option value="4.5">Chuveiro Elétrico (4.5 kW)</option>
-            <option value="0.2">Geladeira Frost Free (0.2 kW)</option>
-            <option value="1.0">Ferro de Passar (1.0 kW)</option>
-          </select>
-        </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const ctx = document.getElementById('consumptionChart').getContext('2d');
+            const dias = Array.from({length: 30}, (_, i) => i + 1);
+            const consumoReal = [4, 5, 4.5, 6, 7, 12, 5, 4, 4.2, 5.1, 4.8, 6, 5, 4.5, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null];
+            const projecao = [null, null, null, null, null, null, null, null, null, null, null, null, null, 4.5, 5, 4.8, 5.2, 5, 4.5, 5.1, 5, 4.9, 5.2, 5, 4.8, 5, 4.5, 5, 5.1, 5];
 
-        <div class="form-group">
-          <label for="hours-input">Uso Diário (Horas):</label>
-          <input type="number" id="hours-input" name="hours" class="form-control" min="0.5" max="24" step="0.5" value="4">
-        </div>
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: dias,
+                    datasets: [
+                        { label: 'Consumo Real (kWh)', data: consumoReal, borderColor: '#10B981', backgroundColor: 'rgba(16, 185, 129, 0.1)', borderWidth: 2, tension: 0.3, fill: true },
+                        { label: 'Projeção / Estimativa (kWh)', data: projecao, borderColor: '#9CA3AF', borderWidth: 2, borderDash: [5, 5], tension: 0.3 }
+                    ]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: '#F9FAFB', font: { family: 'Inter' } } }, tooltip: { mode: 'index', intersect: false } }, scales: { x: { grid: { color: '#374151' }, ticks: { color: '#9CA3AF' } }, y: { grid: { color: '#374151' }, ticks: { color: '#9CA3AF' }, beginAtZero: true } } }
+            });
 
-        <div class="form-actions">
-          <button type="submit" class="btn btn-primary">Recalcular Estimativa</button>
-        </div>
-      </form>
-    </section>
-  </main>
+            const btnReadAloud = document.getElementById('btn-read-aloud');
+            const aiMessage = document.getElementById('ai-message').innerText;
 
-  <footer class="app-footer" role="contentinfo">
-    <div class="footer-container">
-      <p>&copy; 2026 Energia+ - Sistema Inteligente de Eficiência Energética Residencial.</p>
-      <p>Desenvolvido em conformidade com as diretrizes <strong>WCAG 2.1 AA</strong> e <strong>e-MAG</strong>.</p>
-    </div>
-  </footer>
+            btnReadAloud.addEventListener('click', () => {
+                if ('speechSynthesis' in window) {
+                    window.speechSynthesis.cancel();
+                    const utterance = new SpeechSynthesisUtterance(aiMessage);
+                    utterance.lang = 'pt-BR';
+                    utterance.rate = 1.0;
+                    const voices = window.speechSynthesis.getVoices();
+                    const ptVoice = voices.find(voice => voice.lang.includes('pt'));
+                    if (ptVoice) utterance.voice = ptVoice;
+                    window.speechSynthesis.speak(utterance);
+                } else {
+                    alert("Desculpe, seu navegador não suporta leitura em voz alta.");
+                }
+            });
+
+            const btnVoiceCommand = document.getElementById('btn-voice-command');
+            const statusDot = document.querySelector('.status-dot');
+            const systemStatus = document.getElementById('system-status');
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+            if (SpeechRecognition) {
+                const recognition = new SpeechRecognition();
+                recognition.lang = 'pt-BR';
+                recognition.interimResults = false;
+                recognition.maxAlternatives = 1;
+
+                btnVoiceCommand.addEventListener('click', () => {
+                    recognition.start();
+                    btnVoiceCommand.classList.add('listening');
+                    btnVoiceCommand.querySelector('span').innerText = "Ouvindo...";
+                    statusDot.classList.replace('online', 'listening');
+                    systemStatus.innerHTML = '<span class="status-dot listening"></span> Escutando comando...';
+                });
+
+                recognition.addEventListener('result', (e) => {
+                    const transcript = e.results[0][0].transcript.toLowerCase();
+                    if (transcript.includes('fatura') || transcript.includes('valor')) {
+                        const estimatedBill = document.getElementById('estimated-bill').innerText;
+                        const msg = `Sua estimativa de fatura atual é de ${estimatedBill}.`;
+                        const reply = new SpeechSynthesisUtterance(msg);
+                        reply.lang = 'pt-BR';
+                        window.speechSynthesis.speak(reply);
+                        systemStatus.innerHTML = `<span class="status-dot online"></span> Resposta: ${msg}`;
+                    } else {
+                        systemStatus.innerHTML = `<span class="status-dot online"></span> Comando não reconhecido.`;
+                    }
+                });
+
+                recognition.addEventListener('end', () => {
+                    btnVoiceCommand.classList.remove('listening');
+                    btnVoiceCommand.querySelector('span').innerText = "Comando de Voz";
+                    statusDot.classList.replace('listening', 'online');
+                    setTimeout(() => { if(!systemStatus.innerText.includes('Resposta')) { systemStatus.innerHTML = '<span class="status-dot online"></span> Sistema Ativo'; } }, 3000);
+                });
+
+                recognition.addEventListener('error', () => {
+                    systemStatus.innerHTML = '<span class="status-dot online"></span> Erro no microfone.';
+                });
+            } else {
+                btnVoiceCommand.style.display = 'none';
+            }
+
+            const form = document.getElementById('simulator');
+            const resultDiv = document.getElementById('simulation-result');
+            form.addEventListener('submit', (e) => {
+                const appliance = document.getElementById('appliance').value;
+                const hours = parseInt(document.getElementById('hours').value);
+                if (!appliance || !hours) return;
+                let powerW = 0;
+                if (appliance === 'ar-condicionado') powerW = 1200;
+                else if (appliance === 'chuveiro') powerW = 5500;
+                else if (appliance === 'ferro') powerW = 1000;
+                const precoKwh = 0.95;
+                const consumoMensalExtra = (powerW * hours * 30) / 1000;
+                const custoExtra = consumoMensalExtra * precoKwh;
+                const formatado = custoExtra.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+                resultDiv.innerText = `Adicionar o uso deste aparelho aumentará sua fatura em aproximadamente ${formatado} este mês (+${consumoMensalExtra} kWh).`;
+                document.getElementById('estimated-bill').classList.add('variation-up');
+            });
+        });
+    </script>
 </body>
 </html>
-/* ==========================================================================
-   VARIAVEIS DE DESIGN E ACESSIBILIDADE (Dark Mode Padrão)
-   ========================================================================== */
-:root {
-  --bg-primary: #0F172A;
-  --bg-secondary: #1E293B;
-  --bg-card: #334155;
-  
-  --text-primary: #F8FAFC;
-  --text-secondary: #94A3B8;
-  --text-muted: #CBD5E1;
-  
-  --accent-green: #10B981;
-  --accent-green-hover: #059669;
-  --accent-blue: #3B82F6;
-  --accent-blue-hover: #2563EB;
-  
-  --color-alert: #EF4444;
-  --color-warning: #F59E0B;
-  --color-success: #34D399;
-
-  --border-radius: 12px;
-  --transition-speed: 0.2s;
-  --focus-outline: 3px solid #60A5FA;
-}
-
-/* Base Styles */
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
-
-body {
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-  background-color: var(--bg-primary);
-  color: var(--text-primary);
-  line-height: 1.6;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-}
-
-/* Accessibility Focus & Skip Link */
-.skip-link {
-  position: absolute;
-  top: -40px;
-  left: 10px;
-  background: var(--accent-blue);
-  color: #FFF;
-  padding: 8px 16px;
-  z-index: 1000;
-  border-radius: 4px;
-  text-decoration: none;
-  font-weight: bold;
-  transition: top var(--transition-speed);
-}
-
-.skip-link:focus {
-  top: 10px;
-  outline: var(--focus-outline);
-}
-
-:focus-visible {
-  outline: var(--focus-outline);
-  outline-offset: 2px;
-}
-
-.sr-only {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  border: 0;
-}
-
-/* Header */
-.app-header {
-  background-color: var(--bg-secondary);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  padding: 1rem 1.5rem;
-}
-
-.header-container {
-  max-width: 1200px;
-  margin: 0 auto;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 1rem;
-}
-
-.brand h1 {
-  font-size: 1.75rem;
-  letter-spacing: -0.5px;
-}
-
-.brand-accent {
-  color: var(--accent-green);
-}
-
-.system-status {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-size: 0.9rem;
-  color: var(--text-secondary);
-}
-
-.status-indicator {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  background-color: var(--color-success);
-}
-
-/* Main Layout */
-.app-main {
-  max-width: 1200px;
-  width: 100%;
-  margin: 2rem auto;
-  padding: 0 1.5rem;
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 2rem;
-}
-
-/* Voice Feedback Banner */
-.voice-feedback-banner {
-  background-color: var(--accent-blue);
-  color: #FFF;
-  padding: 1rem;
-  border-radius: var(--border-radius);
-  font-weight: 600;
-  text-align: center;
-}
-
-.hidden {
-  display: none;
-}
-
-/* Dashboard Cards Grid */
-.dashboard-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 1.5rem;
-}
-
-.card {
-  background-color: var(--bg-secondary);
-  border-radius: var(--border-radius);
-  padding: 1.5rem;
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-}
-
-.card-header h2 {
-  font-size: 1.1rem;
-  color: var(--text-secondary);
-  font-weight: 500;
-}
-
-.metric-value {
-  font-size: 2.25rem;
-  font-weight: 700;
-  margin: 0.5rem 0;
-  color: var(--text-primary);
-}
-
-.unit {
-  font-size: 1.25rem;
-  color: var(--text-secondary);
-}
-
-.metric-subtext {
-  font-size: 0.95rem;
-  color: var(--text-muted);
-}
-
-.warning-text {
-  color: var(--color-warning);
-  font-weight: 600;
-}
-
-.eco-text {
-  color: var(--accent-green);
-}
-
-/* Section Header */
-.section-header h2 {
-  font-size: 1.4rem;
-  margin-bottom: 0.25rem;
-}
-
-.section-header p {
-  color: var(--text-secondary);
-  font-size: 0.95rem;
-  margin-bottom: 1rem;
-}
-
-/* Chart Container */
-.chart-section {
-  background-color: var(--bg-secondary);
-  border-radius: var(--border-radius);
-  padding: 1.5rem;
-  border: 1px solid rgba(255, 255, 255, 0.05);
-}
-
-.chart-container {
-  position: relative;
-  width: 100%;
-  height: 320px;
-}
-
-/* AI Assistant Card */
-.ai-assistant-section {
-  background: linear-gradient(135deg, #1E293B 0%, #0F172A 100%);
-  border: 1px solid var(--accent-green);
-  border-radius: var(--border-radius);
-  padding: 1.5rem;
-}
-
-.ai-header {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  margin-bottom: 1rem;
-  color: var(--accent-green);
-}
-
-.ai-text {
-  font-size: 1.05rem;
-  line-height: 1.7;
-  color: var(--text-primary);
-  margin-bottom: 1.5rem;
-}
-
-/* Form Styles */
-.simulation-section {
-  background-color: var(--bg-secondary);
-  border-radius: var(--border-radius);
-  padding: 1.5rem;
-}
-
-.simulation-form {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 1.25rem;
-  align-items: end;
-}
-
-.form-group {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-.form-group label {
-  font-size: 0.95rem;
-  color: var(--text-secondary);
-}
-
-.form-control {
-  background-color: var(--bg-primary);
-  border: 1px solid var(--bg-card);
-  color: var(--text-primary);
-  padding: 0.75rem 1rem;
-  border-radius: 8px;
-  font-size: 1rem;
-}
-
-/* Buttons */
-.btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  padding: 0.75rem 1.5rem;
-  border-radius: 8px;
-  font-weight: 600;
-  font-size: 1rem;
-  cursor: pointer;
-  border: none;
-  transition: background-color var(--transition-speed);
-}
-
-.btn-primary {
-  background-color: var(--accent-green);
-  color: #000;
-}
-
-.btn-primary:hover {
-  background-color: var(--accent-green-hover);
-}
-
-.btn-secondary {
-  background-color: var(--bg-card);
-  color: var(--text-primary);
-}
-
-.btn-secondary:hover {
-  background-color: #475569;
-}
-
-.btn-voice {
-  background-color: var(--accent-blue);
-  color: #FFF;
-}
-
-.btn-voice:hover {
-  background-color: var(--accent-blue-hover);
-}
-
-.btn-voice.listening {
-  background-color: var(--color-alert);
-  animation: pulse 1.5s infinite;
-}
-
-@keyframes pulse {
-  0% { opacity: 1; }
-  50% { opacity: 0.6; }
-  100% { opacity: 1; }
-}
-
-/* Footer */
-.app-footer {
-  background-color: var(--bg-secondary);
-  border-top: 1px solid rgba(255, 255, 255, 0.05);
-  padding: 1.5rem;
-  text-align: center;
-  color: var(--text-secondary);
-  font-size: 0.9rem;
-  margin-top: auto;
-}
-document.addEventListener('DOMContentLoaded', () => {
-  // Inicialização do Gráfico com Chart.js
-  initChart();
-
-  // Funcionalidades de Acessibilidade Multimodal e Voz
-  setupSpeechSynthesis();
-  setupSpeechRecognition();
-
-  // Evento do Formulário de Simulação Rápida
-  const form = document.getElementById('simulation-form');
-  form.addEventListener('submit', handleSimulationSubmit);
-});
-
-/* ==========================================================================
-   1. GRAFICO PREDITIVO COM CHART.JS
-   ========================================================================== */
-let consumptionChart;
-
-function initChart() {
-  const ctx = document.getElementById('consumptionChart').getContext('2d');
-  
-  const labels = ['Dia 1', 'Dia 3', 'Dia 6', 'Dia 9', 'Dia 12', 'Dia 15 (Hoje)', 'Dia 18 (Proj)', 'Dia 21 (Proj)', 'Dia 24 (Proj)', 'Dia 30 (Proj)'];
-  const dataReal = [25, 50, 80, 115, 150, 185, null, null, null, null];
-  const dataProjetado = [null, null, null, null, null, 185, 220, 260, 290, 350];
-
-  consumptionChart = new Chart(ctx, {
-    type: 'line',
-    data: {
-      labels: labels,
-      datasets: [
-        {
-          label: 'Consumo Real (kWh)',
-          data: dataReal,
-          borderColor: '#10B981',
-          backgroundColor: 'rgba(16, 185, 129, 0.1)',
-          borderWidth: 3,
-          fill: true,
-          tension: 0.3
-        },
-        {
-          label: 'Projeção Preditiva (kWh)',
-          data: dataProjetado,
-          borderColor: '#3B82F6',
-          borderDash: [6, 6],
-          borderWidth: 3,
-          fill: false,
-          tension: 0.3
-        }
-      ]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: {
-        legend: {
-          labels: { color: '#F8FAFC', font: { size: 14 } }
-        },
-        tooltip: {
-          mode: 'index',
-          intersect: false
-        }
-      },
-      scales: {
-        x: {
-          grid: { color: 'rgba(255, 255, 255, 0.05)' },
-          ticks: { color: '#94A3B8' }
-        },
-        y: {
-          grid: { color: 'rgba(255, 255, 255, 0.05)' },
-          ticks: { color: '#94A3B8' }
-        }
-      }
-    }
-  });
-}
-
-/* ==========================================================================
-   2. RECONHECIMENTO DE VOZ (SPEECH RECOGNITION - INPUT)
-   ========================================================================== */
-function setupSpeechRecognition() {
-  const btnVoice = document.getElementById('btn-voice-command');
-  const btnText = document.getElementById('voice-btn-text');
-  const voiceBanner = document.getElementById('voice-feedback');
-  const voiceBannerText = document.getElementById('voice-feedback-text');
-
-  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-
-  if (!SpeechRecognition) {
-    btnVoice.disabled = true;
-    btnText.textContent = "Voz Não Suportada";
-    return;
-  }
-
-  const recognition = new SpeechRecognition();
-  recognition.lang = 'pt-BR';
-  recognition.continuous = false;
-  recognition.interimResults = false;
-
-  btnVoice.addEventListener('click', () => {
-    const isListening = btnVoice.getAttribute('aria-pressed') === 'true';
-
-    if (isListening) {
-      recognition.stop();
-    } else {
-      recognition.start();
-    }
-  });
-
-  recognition.onstart = () => {
-    btnVoice.setAttribute('aria-pressed', 'true');
-    btnVoice.classList.add('listening');
-    btnText.textContent = "Ouvindo...";
-    voiceBanner.classList.remove('hidden');
-    voiceBannerText.textContent = "Fale agora (ex: 'Qual o valor da fatura?')...";
-  };
-
-  recognition.onend = () => {
-    btnVoice.setAttribute('aria-pressed', 'false');
-    btnVoice.classList.remove('listening');
-    btnText.textContent = "Comando por Voz";
-  };
-
-  recognition.onresult = (event) => {
-    const transcript = event.results[0][0].transcript.toLowerCase();
-    voiceBannerText.textContent = `Você disse: "${transcript}"`;
-    processVoiceCommand(transcript);
-  };
-
-  recognition.onerror = () => {
-    voiceBannerText.textContent = "Não entendi o comando. Tente novamente.";
-    setTimeout(() => voiceBanner.classList.add('hidden'), 3000);
-  };
-}
-
-function processVoiceCommand(command) {
-  if (command.includes('fatura') || command.includes('valor')) {
-    const fatura = document.getElementById('fatura-estimada').textContent;
-    speakText(`A sua fatura estimada até o final do mês é de ${fatura}.`);
-  } else if (command.includes('consumo') || command.includes('kwh')) {
-    const consumo = document.getElementById('kwh-acumulado').textContent;
-    speakText(`Seu consumo acumulado atual é de ${consumo}.`);
-  } else if (command.includes('dica') || command.includes('ajuda')) {
-    const sugestao = document.getElementById('ai-suggestion-text').textContent;
-    speakText(sugestao);
-  } else {
-    speakText("Desculpe, comando não reconhecido. Tente perguntar sobre fatura ou consumo.");
-  }
-}
-
-/* ==========================================================================
-   3. SÍNTESE DE VOZ (SPEECH SYNTHESIS - TEXT-TO-SPEECH OUTPUT)
-   ========================================================================== */
-function setupSpeechSynthesis() {
-  const btnRead = document.getElementById('btn-read-ai');
-  const textToRead = document.getElementById('ai-suggestion-text');
-
-  btnRead.addEventListener('click', () => {
-    speakText(textToRead.textContent);
-  });
-}
-
-function speakText(text) {
-  if ('speechSynthesis' in window) {
-    window.speechSynthesis.cancel(); // Para execuções anteriores
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = 'pt-BR';
-    utterance.rate = 1.0;
-    window.speechSynthesis.speak(utterance);
-  } else {
-    alert("Seu navegador não suporta a funcionalidade de síntese de voz.");
-  }
-}
-
-/* ==========================================================================
-   4. SIMULAÇÃO E RECALCULO DE ESTIMATIVAS
-   ========================================================================== */
-function handleSimulationSubmit(event) {
-  event.preventDefault();
-
-  const powerKW = parseFloat(document.getElementById('appliance-select').value);
-  const hours = parseFloat(document.getElementById('hours-input').value);
-
-  // Cálculo simplificado de impacto diário (kWh x Horas x 30 dias x Tarifa Média R$ 0.85)
-  const aditionalKWh = powerKW * hours * 30;
-  const aditionalCost = aditionalKWh * 0.85;
-
-  const currentBill = 298.50;
-  const newBill = currentBill + aditionalCost;
-
-  // Atualiza elementos com feedback visual e acessível
-  const faturaElement = document.getElementById('fatura-estimada');
-  faturaElement.textContent = `R$ ${newBill.toFixed(2).replace('.', ',')}`;
-
-  // Atualização dinâmica do gráfico
-  if (consumptionChart) {
-    const lastIndex = consumptionChart.data.datasets[1].data.length - 1;
-    consumptionChart.data.datasets[1].data[lastIndex] += Math.round(aditionalKWh / 10);
-    consumptionChart.update();
-  }
-
-  // Notificação via voz do recálculo
-  speakText(`Estimativa recalculada. O novo valor projetado da fatura é R$ ${newBill.toFixed(2).replace('.', ',')}.`);
-}
