@@ -143,7 +143,7 @@
 
             <section class="simulation-form" aria-labelledby="form-title">
                 <h2 id="form-title">Simulação Rápida</h2>
-                <form id="simulator" onsubmit="event.preventDefault();">
+                <form id="simulator">
                     <div class="form-group">
                         <label for="appliance">Eletrodoméstico</label>
                         <select id="appliance" name="appliance" required>
@@ -249,64 +249,55 @@
                 btnVoiceCommand.style.display = 'none';
             }
 
+            // FORMULÁRIO DE SIMULAÇÃO INTEGRADO COM API PYTHON (FASTAPI + MYSQL)
             const form = document.getElementById('simulator');
             const resultDiv = document.getElementById('simulation-result');
-            form.addEventListener('submit', (e) => {
+
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault();
                 const appliance = document.getElementById('appliance').value;
                 const hours = parseInt(document.getElementById('hours').value);
                 if (!appliance || !hours) return;
+
                 let powerW = 0;
                 if (appliance === 'ar-condicionado') powerW = 1200;
                 else if (appliance === 'chuveiro') powerW = 5500;
                 else if (appliance === 'ferro') powerW = 1000;
-                const precoKwh = 0.95;
-                const consumoMensalExtra = (powerW * hours * 30) / 1000;
-                const custoExtra = consumoMensalExtra * precoKwh;
-                const formatado = custoExtra.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-                resultDiv.innerText = `Adicionar o uso deste aparelho aumentará sua fatura em aproximadamente ${formatado} este mês (+${consumoMensalExtra} kWh).`;
-                document.getElementById('estimated-bill').classList.add('variation-up');
+
+                const consumoExtraKwh = (powerW * hours * 30) / 1000;
+                const consumoTotalSimulado = 142 + consumoExtraKwh; // Consumo base + simulação
+
+                try {
+                    // Chamada via fetch para a API local em FastAPI
+                    const resposta = await fetch("http://127.0.0.1:8000/api/previsao", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify({
+                            usuario_id: 1,
+                            kwh_atual: consumoTotalSimulado
+                        })
+                    });
+
+                    const dados = await resposta.json();
+
+                    if (resposta.ok) {
+                        // Atualiza os cartões no topo da tela com a resposta da API
+                        document.getElementById('estimated-bill').innerText = `R$ ${dados["estimativa_fatura_R$"].toFixed(2)}`;
+                        document.getElementById('current-consumption').innerHTML = `${dados.consumo_inserido_kwh.toFixed(0)} <span class="unit">kWh</span>`;
+                        
+                        resultDiv.innerText = `Simulação calculada pela API: A nova projeção é de ${dados.projecao_final_mes_kwh} kWh (R$ ${dados["estimativa_fatura_R$"].toFixed(2)}). Dados salvos no MySQL!`;
+                        alert("Sucesso! Calculado pela API Python e salvo no Banco de Dados MySQL.");
+                    } else {
+                        alert("Erro na API: " + dados.detail);
+                    }
+                } catch (erro) {
+                    console.error("Erro na conexão com o Back-end:", erro);
+                    alert("Atenção: Verifique se o terminal do VS Code está rodando a API Python (uvicorn main:app --reload).");
+                }
             });
         });
-    </script> 
-    async function enviarLeituraParaAPI() {
-    // 1. Pega o valor do campo de texto onde a pessoa digita o consumo
-    const campoKwh = document.getElementById("inputKwh"); // Use o ID do seu campo
-    const valorKwh = campoKwh ? campoKwh.value : null;
-
-    if (!valorKwh) {
-        alert("Por favor, digite o consumo em kWh!");
-        return;
-    }
-
-    try {
-        // 2. Envia os dados para a sua API Python local
-        const resposta = await fetch("http://127.0.0.1:8000/api/previsao", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                usuario_id: 1,
-                kwh_atual: parseFloat(valorKwh)
-            })
-        });
-
-        // 3. Recebe o resultado do Python
-        const dados = await resposta.json();
-
-        if (resposta.ok) {
-            // 4. Atualiza os cartões na tela do seu site
-            document.getElementById("cardEstimativa").innerText = `R$ ${dados["estimativa_fatura_R$"]}`;
-            document.getElementById("cardProjecao").innerText = `${dados.projecao_final_mes_kwh} kWh`;
-            alert("Sucesso! Calculado pela API e salvo no MySQL.");
-        } else {
-            alert("Erro na API: " + dados.detail);
-        }
-    } catch (erro) {
-        console.error("Erro ao conectar com a API local:", erro);
-        alert("Não foi possível conectar. Verifique se o terminal do VS Code com o Python está rodando!");
-    }
-}
- </script>
+    </script>
 </body>
 </html>
