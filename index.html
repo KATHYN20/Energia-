@@ -267,45 +267,6 @@
                 document.getElementById('estimated-bill').classList.add('variation-up');
             });
         });
-    </script>
+    </script> 
 </body>
 </html>
-async function enviarLeituraParaAPI() {
-    // 1. Pega o valor do campo de texto onde a pessoa digita o consumo
-    const campoKwh = document.getElementById("inputKwh"); // Use o ID do seu campo
-    const valorKwh = campoKwh ? campoKwh.value : null;
-
-    if (!valorKwh) {
-        alert("Por favor, digite o consumo em kWh!");
-        return;
-    }
-
-    try {
-        // 2. Envia os dados para a sua API Python local
-        const resposta = await fetch("http://127.0.0.1:8000/api/previsao", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                usuario_id: 1,
-                kwh_atual: parseFloat(valorKwh)
-            })
-        });
-
-        // 3. Recebe o resultado do Python
-        const dados = await resposta.json();
-
-        if (resposta.ok) {
-            // 4. Atualiza os cartões na tela do seu site
-            document.getElementById("cardEstimativa").innerText = `R$ ${dados["estimativa_fatura_R$"]}`;
-            document.getElementById("cardProjecao").innerText = `${dados.projecao_final_mes_kwh} kWh`;
-            alert("Sucesso! Calculado pela API e salvo no MySQL.");
-        } else {
-            alert("Erro na API: " + dados.detail);
-        }
-    } catch (erro) {
-        console.error("Erro ao conectar com a API local:", erro);
-        alert("Não foi possível conectar. Verifique se o terminal do VS Code com o Python está rodando!");
-    }
-}
