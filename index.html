@@ -170,24 +170,25 @@
             const ctx = document.getElementById('consumptionChart').getContext('2d');
             const dias = Array.from({length: 30}, (_, i) => i + 1);
             const consumoReal = [4, 5, 4.5, 6, 7, 12, 5, 4, 4.2, 5.1, 4.8, 6, 5, 4.5, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null];
-            const projecao = [null, null, null, null, null, null, null, null, null, null, null, null, null, 4.5, 5, 4.8, 5.2, 5, 4.5, 5.1, 5, 4.9, 5.2, 5, 4.8, 5, 4.5, 5, 5.1, 5];
+            let projecaoInicial = [null, null, null, null, null, null, null, null, null, null, null, null, null, 4.5, 5, 4.8, 5.2, 5, 4.5, 5.1, 5, 4.9, 5.2, 5, 4.8, 5, 4.5, 5, 5.1, 5];
 
-            new Chart(ctx, {
+            // Guarda a instância do gráfico para poder atualizar dinamicamente
+            const meugrafico = new Chart(ctx, {
                 type: 'line',
                 data: {
                     labels: dias,
                     datasets: [
                         { label: 'Consumo Real (kWh)', data: consumoReal, borderColor: '#10B981', backgroundColor: 'rgba(16, 185, 129, 0.1)', borderWidth: 2, tension: 0.3, fill: true },
-                        { label: 'Projeção / Estimativa (kWh)', data: projecao, borderColor: '#9CA3AF', borderWidth: 2, borderDash: [5, 5], tension: 0.3 }
+                        { label: 'Projeção / Estimativa (kWh)', data: projecaoInicial, borderColor: '#9CA3AF', borderWidth: 2, borderDash: [5, 5], tension: 0.3 }
                     ]
                 },
                 options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: '#F9FAFB', font: { family: 'Inter' } } }, tooltip: { mode: 'index', intersect: false } }, scales: { x: { grid: { color: '#374151' }, ticks: { color: '#9CA3AF' } }, y: { grid: { color: '#374151' }, ticks: { color: '#9CA3AF' }, beginAtZero: true } } }
             });
 
             const btnReadAloud = document.getElementById('btn-read-aloud');
-            const aiMessage = document.getElementById('ai-message').innerText;
 
             btnReadAloud.addEventListener('click', () => {
+                const aiMessage = document.getElementById('ai-message').innerText;
                 if ('speechSynthesis' in window) {
                     window.speechSynthesis.cancel();
                     const utterance = new SpeechSynthesisUtterance(aiMessage);
@@ -249,26 +250,27 @@
                 btnVoiceCommand.style.display = 'none';
             }
 
-            // FORMULÁRIO DE SIMULAÇÃO INTEGRADO COM API PYTHON (FASTAPI + MYSQL)
+            // FORMULÁRIO DE SIMULAÇÃO INTEGRADO COM API PYTHON + MYSQL E GRÁFICO DINÂMICO
             const form = document.getElementById('simulator');
             const resultDiv = document.getElementById('simulation-result');
 
             form.addEventListener('submit', async (e) => {
                 e.preventDefault();
-                const appliance = document.getElementById('appliance').value;
+                const applianceSelect = document.getElementById('appliance');
+                const applianceValue = applianceSelect.value;
+                const applianceName = applianceSelect.options[applianceSelect.selectedIndex].text;
                 const hours = parseInt(document.getElementById('hours').value);
-                if (!appliance || !hours) return;
+                if (!applianceValue || !hours) return;
 
                 let powerW = 0;
-                if (appliance === 'ar-condicionado') powerW = 1200;
-                else if (appliance === 'chuveiro') powerW = 5500;
-                else if (appliance === 'ferro') powerW = 1000;
+                if (applianceValue === 'ar-condicionado') powerW = 1200;
+                else if (applianceValue === 'chuveiro') powerW = 5500;
+                else if (applianceValue === 'ferro') powerW = 1000;
 
                 const consumoExtraKwh = (powerW * hours * 30) / 1000;
-                const consumoTotalSimulado = 142 + consumoExtraKwh; // Consumo base + simulação
+                const consumoTotalSimulado = 142 + consumoExtraKwh;
 
                 try {
-                    // Chamada via fetch para a API local em FastAPI
                     const resposta = await fetch("http://127.0.0.1:8000/api/previsao", {
                         method: "POST",
                         headers: {
@@ -283,12 +285,29 @@
                     const dados = await resposta.json();
 
                     if (resposta.ok) {
-                        // Atualiza os cartões no topo da tela com a resposta da API
+                        // 1. Atualiza os cartões no topo
                         document.getElementById('estimated-bill').innerText = `R$ ${dados["estimativa_fatura_R$"].toFixed(2)}`;
                         document.getElementById('current-consumption').innerHTML = `${dados.consumo_inserido_kwh.toFixed(0)} <span class="unit">kWh</span>`;
                         
+                        // 2. Atualiza a mensagem da simulação
                         resultDiv.innerText = `Simulação calculada pela API: A nova projeção é de ${dados.projecao_final_mes_kwh} kWh (R$ ${dados["estimativa_fatura_R$"].toFixed(2)}). Dados salvos no MySQL!`;
-                        alert("Sucesso! Calculado pela API Python e salvo no Banco de Dados MySQL.");
+
+                        // 3. Atualiza o Assistente Energia+
+                        document.getElementById('ai-message').innerHTML = `
+                            <p><strong>Relato Atualizado da IA:</strong> Identificamos que a inclusão de <strong>${applianceName}</strong> por <strong>${hours} hora(s) diária(s)</strong> elevou sua estimativa de fatura para <strong>R$ ${dados["estimativa_fatura_R$"].toFixed(2)}</strong> (${dados.projecao_final_mes_kwh} kWh projetados). Recomendamos moderar o tempo de uso para otimizar seus custos.</p>
+                        `;
+
+                        // 4. ATUALIZA O GRÁFICO VISUALMENTE EM TEMPO REAL!
+                        const mediaDiariaProjetada = (dados.projecao_final_mes_kwh / 30).toFixed(1);
+                        const novaLinhaProjecao = [
+                            null, null, null, null, null, null, null, null, null, null, null, null, null, 4.5,
+                            ...Array(16).fill(parseFloat(mediaDiariaProjetada))
+                        ];
+
+                        meugrafico.data.datasets[1].data = novaLinhaProjecao;
+                        meugrafico.update(); // Redesenha a linha no gráfico instantaneamente!
+
+                        alert("Sucesso! Calculado pela API Python, gráfico atualizado e salvo no MySQL.");
                     } else {
                         alert("Erro na API: " + dados.detail);
                     }
