@@ -25,20 +25,22 @@
             --transition: all 0.3s ease;
         }
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Inter', sans-serif; background-color: var(--bg-base); color: var(--text-primary); line-height: 1.6; -webkit-font-smoothing: antialiased; }
+        body { font-family: 'Inter', sans-serif; background-color: var(--bg-base); color: var(--text-primary); font-size: 16px; line-height: 1.6; -webkit-font-smoothing: antialiased; }
         *:focus-visible { outline: 3px solid var(--focus-ring); outline-offset: 2px; }
         .visually-hidden { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
         h1, h2, h3 { color: var(--text-primary); font-weight: 600; }
         h2 { font-size: 1.25rem; margin-bottom: 1rem; }
+
         .header { background-color: var(--bg-surface); border-bottom: 1px solid var(--border-color); padding: 1rem; position: sticky; top: 0; z-index: 100; }
         .header-container { max-width: 1200px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; }
         .logo { display: flex; align-items: center; gap: 0.5rem; font-size: 1.5rem; color: var(--primary-color); }
-        .header-controls { display: flex; align-items: center; gap: 1.5rem; }
-        .status-indicator { display: flex; align-items: center; gap: 0.5rem; font-size: 0.875rem; color: var(--text-secondary); }
-        .status-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+        .header-controls { display: flex; align-items: center; gap: 1.5rem; flex-wrap: wrap; }
+        .status-indicator { display: flex; align-items: center; gap: 0.5rem; font-size: 0.9rem; color: var(--text-secondary); }
+        .status-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; flex-shrink: 0; }
         .status-dot.online { background-color: var(--primary-color); box-shadow: 0 0 8px var(--primary-color); }
         .status-dot.listening { background-color: var(--alert-warning); box-shadow: 0 0 8px var(--alert-warning); animation: pulse 1s infinite alternate; }
         @keyframes pulse { from { transform: scale(1); opacity: 0.8; } to { transform: scale(1.3); opacity: 1; } }
+
         .main-content { max-width: 1200px; margin: 2rem auto; padding: 0 1rem; display: flex; flex-direction: column; gap: 2rem; }
         .dashboard-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; }
         .card { background-color: var(--bg-surface); border-radius: var(--radius-lg); padding: 1.5rem; border: 1px solid var(--border-color); transition: var(--transition); }
@@ -48,28 +50,42 @@
         .unit { font-size: 1.125rem; font-weight: 500; color: var(--text-secondary); }
         .card-subtitle { font-size: 0.875rem; color: var(--text-secondary); }
         .text-alert { color: var(--alert-warning); }
-        .variation-up { color: var(--alert-danger); }
+        .text-danger { color: var(--alert-danger); }
+        .variation-up { color: var(--alert-warning); }
         .card-eco { border-left: 4px solid var(--primary-color); }
+
         .chart-section { background-color: var(--bg-surface); border-radius: var(--radius-lg); padding: 1.5rem; border: 1px solid var(--border-color); }
+        .chart-header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.75rem; margin-bottom: 1rem; }
+        .chart-header h2 { margin-bottom: 0; }
+        .outlier-badge { background-color: rgba(239, 68, 68, 0.15); color: #FCA5A5; border: 1px solid var(--alert-danger); padding: 0.35rem 0.75rem; border-radius: 999px; font-size: 0.85rem; font-weight: 500; }
         .chart-container { position: relative; height: 300px; width: 100%; }
+
         .bottom-grid { display: grid; grid-template-columns: 1fr; gap: 1.5rem; }
         @media (min-width: 768px) { .bottom-grid { grid-template-columns: 1.2fr 1fr; } }
-        .ai-assistant, .simulation-form { background-color: var(--bg-surface); border-radius: var(--radius-lg); padding: 1.5rem; border: 1px solid var(--border-color); }
-        .ai-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
-        .ai-content { background-color: rgba(16, 185, 129, 0.1); border-left: 4px solid var(--primary-color); padding: 1rem; border-radius: 0 var(--radius-md) var(--radius-md) 0; font-size: 0.95rem; }
+
+        .ai-assistant, .simulation-form, .reading-form { background-color: var(--bg-surface); border-radius: var(--radius-lg); padding: 1.5rem; border: 1px solid var(--border-color); }
+        .ai-header { display: flex; justify-content: space-between; align-items: center; gap: 1rem; margin-bottom: 1rem; flex-wrap: wrap; }
+        .ai-header h2 { margin-bottom: 0; }
+        .ai-content { background-color: rgba(16, 185, 129, 0.1); border-left: 4px solid var(--primary-color); padding: 1rem; border-radius: 0 var(--radius-md) var(--radius-md) 0; font-size: 0.95rem; display: flex; flex-direction: column; gap: 0.75rem; }
+        .astar-box { background-color: rgba(245, 158, 11, 0.12); border-left: 4px solid var(--alert-warning); padding: 0.85rem; border-radius: 0 var(--radius-md) var(--radius-md) 0; color: #FDE68A; }
+
+        .form-row { display: grid; grid-template-columns: 1fr; gap: 1rem; }
+        @media (min-width: 480px) { .form-row { grid-template-columns: 1fr 1fr; } }
         .form-group { margin-bottom: 1rem; }
         label { display: block; margin-bottom: 0.5rem; font-size: 0.9rem; color: var(--text-secondary); }
-        input, select { width: 100%; padding: 0.75rem; background-color: var(--bg-base); border: 1px solid var(--border-color); color: var(--text-primary); border-radius: var(--radius-md); font-size: 1rem; transition: var(--transition); }
+        input, select { width: 100%; min-height: 48px; padding: 0.75rem; background-color: var(--bg-base); border: 1px solid var(--border-color); color: var(--text-primary); border-radius: var(--radius-md); font-size: 1rem; transition: var(--transition); }
         input:focus, select:focus { border-color: var(--primary-color); outline: none; box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2); }
-        button { cursor: pointer; border: none; font-family: inherit; font-weight: 600; border-radius: var(--radius-md); display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; transition: var(--transition); }
-        .btn-primary { background-color: var(--primary-color); color: var(--bg-base); padding: 0.5rem 1rem; font-size: 0.9rem; }
+
+        button { cursor: pointer; border: none; font-family: inherit; font-weight: 600; min-height: 48px; border-radius: var(--radius-md); display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; transition: var(--transition); }
+        .btn-primary { background-color: var(--primary-color); color: var(--bg-base); padding: 0.5rem 1rem; font-size: 0.95rem; }
         .btn-primary:hover { background-color: var(--primary-hover); }
-        .btn-submit { width: 100%; background-color: var(--secondary-color); color: white; padding: 0.75rem; margin-top: 0.5rem; font-size: 1rem; }
+        .btn-submit { width: 100%; background-color: var(--secondary-color); color: white; padding: 0.75rem; margin-top: 0.25rem; font-size: 1rem; }
         .btn-submit:hover { background-color: #2563EB; }
-        .btn-voice { background-color: transparent; color: var(--primary-color); border: 1px solid var(--primary-color); padding: 0.5rem 1rem; }
+        .btn-voice { background-color: transparent; color: var(--primary-color); border: 1px solid var(--primary-color); padding: 0.5rem 1rem; font-size: 0.95rem; }
         .btn-voice:hover { background-color: rgba(16, 185, 129, 0.1); }
         .btn-voice.listening { background-color: var(--alert-warning); color: var(--bg-base); border-color: var(--alert-warning); }
-        .simulation-result { margin-top: 1rem; font-weight: bold; color: var(--alert-warning); }
+
+        .feedback-msg { margin-top: 1rem; font-size: 0.95rem; font-weight: 500; min-height: 1.5rem; }
     </style>
 </head>
 <body>
@@ -83,7 +99,7 @@
                     <span class="status-dot online"></span> Sistema Ativo
                 </div>
                 <button id="btn-voice-command" class="btn-voice" aria-label="Ativar comando de voz. Fale: Qual o valor da minha fatura?">
-                    <svg aria-hidden="true" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round">
+                    <svg aria-hidden="true" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"></path>
                         <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
                         <line x1="12" y1="19" x2="12" y2="23"></line>
@@ -101,51 +117,79 @@
             <article class="card">
                 <h3 class="card-title">Consumo Atual (Mês)</h3>
                 <div class="card-value" id="current-consumption">142 <span class="unit">kWh</span></div>
-                <div class="card-subtitle">R$ 134,90 acumulados</div>
+                <div class="card-subtitle" id="current-cost">R$ 134,90 acumulados</div>
             </article>
             <article class="card">
                 <h3 class="card-title">Estimativa da Fatura</h3>
                 <div class="card-value text-alert" id="estimated-bill">R$ 210,50</div>
-                <div class="card-subtitle variation-up">
-                    <span aria-hidden="true">↑</span> +5% em relação ao mês anterior
+                <div class="card-subtitle variation-up" id="bill-status">
+                    Dentro da meta mensal (R$ 250,00)
                 </div>
             </article>
             <article class="card card-eco">
-                <h3 class="card-title">Impacto Ambiental</h3>
-                <div class="card-value">12 <span class="unit">kg CO₂</span></div>
-                <div class="card-subtitle">Evitados. 15 kWh economizados!</div>
+                <h3 class="card-title">Impacto Ambiental (ODS 13)</h3>
+                <div class="card-value" id="co2-value">1,28 <span class="unit">kg CO₂</span></div>
+                <div class="card-subtitle" id="co2-subtitle">Evitados (15 kWh × 0,085 kg/kWh – SIN)</div>
             </article>
         </section>
 
         <section class="chart-section" aria-labelledby="chart-title">
-            <h2 id="chart-title">Histórico e Projeção de Consumo</h2>
+            <div class="chart-header">
+                <h2 id="chart-title">Histórico e Projeção de Consumo</h2>
+                <span class="outlier-badge" id="kmeans-badge">⚠ Consumo atípico (K-Means): Dia 6 (12 kWh)</span>
+            </div>
             <div class="chart-container">
                 <canvas id="consumptionChart" aria-label="Gráfico de linha mostrando o consumo real versus a projeção até o fim do mês" role="img"></canvas>
             </div>
         </section>
 
         <div class="bottom-grid">
-            <section class="ai-assistant" aria-labelledby="ai-title">
-                <header class="ai-header">
-                    <h2 id="ai-title">Assistente Energia+</h2>
-                    <button id="btn-read-aloud" class="btn-primary" aria-label="Ouvir dica do assistente de inteligência artificial">
-                        <svg aria-hidden="true" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
-                            <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
-                        </svg>
-                        Ouvir Relato
-                    </button>
-                </header>
-                <div class="ai-content" aria-live="polite" id="ai-message">
-                    <p><strong>Dica de Otimização:</strong> Identificamos um pico de consumo de energia às 19h nos últimos 3 dias. Evite usar o chuveiro elétrico no modo "Inverno" e a máquina de lavar simultaneamente neste horário para reduzir sua estimativa em até R$ 15,00.</p>
-                </div>
-            </section>
+            <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+                <section class="ai-assistant" aria-labelledby="ai-title">
+                    <header class="ai-header">
+                        <h2 id="ai-title">Assistente Energia+</h2>
+                        <button id="btn-read-aloud" class="btn-primary" aria-label="Ouvir dica do assistente de inteligência artificial">
+                            <svg aria-hidden="true" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+                                <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+                            </svg>
+                            Ouvir Relato
+                        </button>
+                    </header>
+                    <div class="ai-content" aria-live="polite" id="ai-message">
+                        <p><strong>Análise de Perfis (K-Means):</strong> Identificamos um padrão atípico no <strong>Dia 6 (12 kWh)</strong>, bem acima da sua média habitual de 5,1 kWh.</p>
+                        <p><strong>Dica de Otimização:</strong> Evite usar o chuveiro elétrico e a máquina de lavar entre 18h e 21h para manter sua fatura dentro da meta.</p>
+                    </div>
+                </section>
+
+                <section class="reading-form" aria-labelledby="reading-title">
+                    <h2 id="reading-title">Registrar Leitura do Medidor (RF01)</h2>
+                    <form id="reading-form">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="reading-day">Dia do Mês (15 a 30)</label>
+                                <input type="number" id="reading-day" min="15" max="30" value="15" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="reading-kwh">Consumo Registrado (kWh)</label>
+                                <input type="number" id="reading-kwh" step="0.1" min="0.5" max="100" placeholder="Ex: 5.5" required>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn-primary" style="width: 100%;">Salvar Leitura no Histórico</button>
+                    </form>
+                    <div id="reading-result" class="feedback-msg" aria-live="polite"></div>
+                </section>
+            </div>
 
             <section class="simulation-form" aria-labelledby="form-title">
-                <h2 id="form-title">Simulação Rápida</h2>
+                <h2 id="form-title">Simulação Rápida e Otimização (A*)</h2>
                 <form id="simulator">
                     <div class="form-group">
-                        <label for="appliance">Eletrodoméstico</label>
+                        <label for="monthly-goal">Sua Meta Financeira Mensal (R$)</label>
+                        <input type="number" id="monthly-goal" name="monthly-goal" min="50" max="5000" step="10" value="250" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="appliance">Eletrodoméstico para Simular</label>
                         <select id="appliance" name="appliance" required>
                             <option value="">Selecione...</option>
                             <option value="ar-condicionado">Ar-condicionado (1200W)</option>
@@ -155,37 +199,111 @@
                     </div>
                     <div class="form-group">
                         <label for="hours">Horas de uso diário extra</label>
-                        <input type="number" id="hours" name="hours" min="1" max="24" required aria-describedby="hours-desc">
+                        <input type="number" id="hours" name="hours" min="1" max="24" placeholder="Ex: 4" required aria-describedby="hours-desc">
                         <span id="hours-desc" class="visually-hidden">Informe de 1 a 24 horas</span>
                     </div>
-                    <button type="submit" class="btn-submit">Calcular Impacto</button>
+                    <button type="submit" class="btn-submit">Calcular Impacto e Otimizar</button>
                 </form>
-                <div id="simulation-result" class="simulation-result" aria-live="assertive"></div>
+                <div id="simulation-result" class="feedback-msg" aria-live="assertive"></div>
             </section>
         </div>
     </main>
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
+            const TARIFA_KWH = 0.95;
+            const FATOR_SIN_CO2 = 0.085;
+
             const ctx = document.getElementById('consumptionChart').getContext('2d');
             const dias = Array.from({length: 30}, (_, i) => i + 1);
             const consumoReal = [4, 5, 4.5, 6, 7, 12, 5, 4, 4.2, 5.1, 4.8, 6, 5, 4.5, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null];
             let projecaoInicial = [null, null, null, null, null, null, null, null, null, null, null, null, null, 4.5, 5, 4.8, 5.2, 5, 4.5, 5.1, 5, 4.9, 5.2, 5, 4.8, 5, 4.5, 5, 5.1, 5];
 
-            // Guarda a instância do gráfico para poder atualizar dinamicamente
+            function calcularEstilosPontos(serie) {
+                const validos = serie.filter(v => v !== null);
+                const media = validos.reduce((acc, v) => acc + v, 0) / validos.length;
+                const variancia = validos.reduce((acc, v) => acc + Math.pow(v - media, 2), 0) / validos.length;
+                const desvioPadrao = Math.sqrt(variancia) || 1;
+
+                const cores = [];
+                const raios = [];
+                const diasAtipicos = [];
+
+                serie.forEach((valor, idx) => {
+                    if (valor === null) {
+                        cores.push('#10B981');
+                        raios.push(0);
+                    } else {
+                        const zScore = (valor - media) / desvioPadrao;
+                        if (zScore > 2.0) {
+                            cores.push('#EF4444');
+                            raios.push(7);
+                            diasAtipicos.push(`Dia ${idx + 1} (${valor} kWh)`);
+                        } else {
+                            cores.push('#10B981');
+                            raios.push(4);
+                        }
+                    }
+                });
+
+                const badge = document.getElementById('kmeans-badge');
+                if (diasAtipicos.length > 0) {
+                    badge.innerText = `⚠ Consumo atípico (K-Means): ${diasAtipicos.join(', ')}`;
+                    badge.style.display = 'inline-block';
+                } else {
+                    badge.style.display = 'none';
+                }
+
+                return { cores, raios };
+            }
+
+            const estilosIniciais = calcularEstilosPontos(consumoReal);
+
             const meugrafico = new Chart(ctx, {
                 type: 'line',
                 data: {
                     labels: dias,
                     datasets: [
-                        { label: 'Consumo Real (kWh)', data: consumoReal, borderColor: '#10B981', backgroundColor: 'rgba(16, 185, 129, 0.1)', borderWidth: 2, tension: 0.3, fill: true },
-                        { label: 'Projeção / Estimativa (kWh)', data: projecaoInicial, borderColor: '#9CA3AF', borderWidth: 2, borderDash: [5, 5], tension: 0.3 }
+                        {
+                            label: 'Consumo Real (kWh)',
+                            data: consumoReal,
+                            borderColor: '#10B981',
+                            backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                            borderWidth: 2,
+                            tension: 0.3,
+                            fill: true,
+                            pointBackgroundColor: estilosIniciais.cores,
+                            pointBorderColor: estilosIniciais.cores,
+                            pointRadius: estilosIniciais.raios,
+                            pointHoverRadius: 8
+                        },
+                        {
+                            label: 'Projeção / Estimativa (kWh)',
+                            data: projecaoInicial,
+                            borderColor: '#9CA3AF',
+                            borderWidth: 2,
+                            borderDash: [5, 5],
+                            tension: 0.3,
+                            pointRadius: 3
+                        }
                     ]
                 },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: '#F9FAFB', font: { family: 'Inter' } } }, tooltip: { mode: 'index', intersect: false } }, scales: { x: { grid: { color: '#374151' }, ticks: { color: '#9CA3AF' } }, y: { grid: { color: '#374151' }, ticks: { color: '#9CA3AF' }, beginAtZero: true } } }
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { labels: { color: '#F9FAFB', font: { family: 'Inter', size: 13 } } },
+                        tooltip: { mode: 'index', intersect: false }
+                    },
+                    scales: {
+                        x: { grid: { color: '#374151' }, ticks: { color: '#9CA3AF' } },
+                        y: { grid: { color: '#374151' }, ticks: { color: '#9CA3AF' }, beginAtZero: true }
+                    }
+                }
             });
 
             const btnReadAloud = document.getElementById('btn-read-aloud');
+            const systemStatus = document.getElementById('system-status');
 
             btnReadAloud.addEventListener('click', () => {
                 const aiMessage = document.getElementById('ai-message').innerText;
@@ -199,13 +317,11 @@
                     if (ptVoice) utterance.voice = ptVoice;
                     window.speechSynthesis.speak(utterance);
                 } else {
-                    alert("Desculpe, seu navegador não suporta leitura em voz alta.");
+                    systemStatus.innerHTML = '<span class="status-dot online"></span> Leitura em voz alta indisponível neste navegador.';
                 }
             });
 
             const btnVoiceCommand = document.getElementById('btn-voice-command');
-            const statusDot = document.querySelector('.status-dot');
-            const systemStatus = document.getElementById('system-status');
             const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 
             if (SpeechRecognition) {
@@ -215,47 +331,97 @@
                 recognition.maxAlternatives = 1;
 
                 btnVoiceCommand.addEventListener('click', () => {
-                    recognition.start();
-                    btnVoiceCommand.classList.add('listening');
-                    btnVoiceCommand.querySelector('span').innerText = "Ouvindo...";
-                    statusDot.classList.replace('online', 'listening');
-                    systemStatus.innerHTML = '<span class="status-dot listening"></span> Escutando comando...';
+                    try {
+                        recognition.start();
+                        btnVoiceCommand.classList.add('listening');
+                        btnVoiceCommand.querySelector('span').innerText = "Ouvindo...";
+                        systemStatus.innerHTML = '<span class="status-dot listening"></span> Escutando comando...';
+                    } catch (err) {
+                        systemStatus.innerHTML = '<span class="status-dot online"></span> Microfone já está ativo.';
+                    }
                 });
 
                 recognition.addEventListener('result', (e) => {
                     const transcript = e.results[0][0].transcript.toLowerCase();
-                    if (transcript.includes('fatura') || transcript.includes('valor')) {
+                    let msg = "";
+
+                    if (transcript.includes('fatura') || transcript.includes('valor') || transcript.includes('conta')) {
                         const estimatedBill = document.getElementById('estimated-bill').innerText;
-                        const msg = `Sua estimativa de fatura atual é de ${estimatedBill}.`;
+                        msg = `Sua estimativa de fatura atual é de ${estimatedBill}.`;
+                    } else if (transcript.includes('consumo') || transcript.includes('gasto')) {
+                        const currentKwh = document.getElementById('current-consumption').innerText;
+                        msg = `Seu consumo acumulado no mês é de ${currentKwh}.`;
+                    } else if (transcript.includes('economia') || transcript.includes('dica') || transcript.includes('otimizar')) {
+                        msg = document.getElementById('ai-message').innerText;
+                    } else if (transcript.includes('ambiental') || transcript.includes('carbono') || transcript.includes('co2')) {
+                        const co2 = document.getElementById('co2-value').innerText;
+                        msg = `O impacto ambiental registrado é de ${co2}.`;
+                    } else {
+                        msg = "Comando não reconhecido. Tente perguntar: qual o valor da minha fatura?";
+                    }
+
+                    if ('speechSynthesis' in window) {
+                        window.speechSynthesis.cancel();
                         const reply = new SpeechSynthesisUtterance(msg);
                         reply.lang = 'pt-BR';
                         window.speechSynthesis.speak(reply);
-                        systemStatus.innerHTML = `<span class="status-dot online"></span> Resposta: ${msg}`;
-                    } else {
-                        systemStatus.innerHTML = `<span class="status-dot online"></span> Comando não reconhecido.`;
                     }
+                    systemStatus.innerHTML = `<span class="status-dot online"></span> ${msg}`;
                 });
 
                 recognition.addEventListener('end', () => {
                     btnVoiceCommand.classList.remove('listening');
                     btnVoiceCommand.querySelector('span').innerText = "Comando de Voz";
-                    statusDot.classList.replace('listening', 'online');
-                    setTimeout(() => { if(!systemStatus.innerText.includes('Resposta')) { systemStatus.innerHTML = '<span class="status-dot online"></span> Sistema Ativo'; } }, 3000);
+                    setTimeout(() => {
+                        if (!systemStatus.innerText.includes('estimativa') && !systemStatus.innerText.includes('consumo')) {
+                            systemStatus.innerHTML = '<span class="status-dot online"></span> Sistema Ativo';
+                        }
+                    }, 4000);
                 });
 
-                recognition.addEventListener('error', () => {
-                    systemStatus.innerHTML = '<span class="status-dot online"></span> Erro no microfone.';
+                recognition.addEventListener('error', (event) => {
+                    btnVoiceCommand.classList.remove('listening');
+                    btnVoiceCommand.querySelector('span').innerText = "Comando de Voz";
+                    systemStatus.innerHTML = `<span class="status-dot online"></span> Voz indisponível (${event.error}). Use os controles manuais (RN03).`;
                 });
             } else {
                 btnVoiceCommand.style.display = 'none';
             }
 
-            // FORMULÁRIO DE SIMULAÇÃO INTEGRADO COM API PYTHON + MYSQL E GRÁFICO DINÂMICO
+            const readingForm = document.getElementById('reading-form');
+            const readingResult = document.getElementById('reading-result');
+
+            readingForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const day = parseInt(document.getElementById('reading-day').value);
+                const kwh = parseFloat(document.getElementById('reading-kwh').value);
+                if (!day || !kwh || day < 1 || day > 30) return;
+
+                consumoReal[day - 1] = kwh;
+                const novosEstilos = calcularEstilosPontos(consumoReal);
+
+                meugrafico.data.datasets[0].data = consumoReal;
+                meugrafico.data.datasets[0].pointBackgroundColor = novosEstilos.cores;
+                meugrafico.data.datasets[0].pointBorderColor = novosEstilos.cores;
+                meugrafico.data.datasets[0].pointRadius = novosEstilos.raios;
+                meugrafico.update();
+
+                const somaReal = consumoReal.filter(v => v !== null).reduce((a, b) => a + b, 0);
+                document.getElementById('current-consumption').innerHTML = `${somaReal.toFixed(1)} <span class="unit">kWh</span>`;
+                document.getElementById('current-cost').innerText = `R$ ${(somaReal * TARIFA_KWH).toFixed(2)} acumulados`;
+
+                readingResult.style.color = '#10B981';
+                readingResult.innerText = `✓ Leitura de ${kwh} kWh registrada no Dia ${day} e gráfico atualizado.`;
+                readingForm.reset();
+                document.getElementById('reading-day').value = Math.min(day + 1, 30);
+            });
+
             const form = document.getElementById('simulator');
             const resultDiv = document.getElementById('simulation-result');
 
             form.addEventListener('submit', async (e) => {
                 e.preventDefault();
+                const metaMensal = parseFloat(document.getElementById('monthly-goal').value) || 250;
                 const applianceSelect = document.getElementById('appliance');
                 const applianceValue = applianceSelect.value;
                 const applianceName = applianceSelect.options[applianceSelect.selectedIndex].text;
@@ -263,12 +429,21 @@
                 if (!applianceValue || !hours) return;
 
                 let powerW = 0;
-                if (applianceValue === 'ar-condicionado') powerW = 1200;
-                else if (applianceValue === 'chuveiro') powerW = 5500;
-                else if (applianceValue === 'ferro') powerW = 1000;
+                let sugestaoHorarioAStar = "";
+                if (applianceValue === 'ar-condicionado') {
+                    powerW = 1200;
+                    sugestaoHorarioAStar = "Programar o Ar-condicionado para operar após as 22h (fora da ponta) e reduzir 2h diárias.";
+                } else if (applianceValue === 'chuveiro') {
+                    powerW = 5500;
+                    sugestaoHorarioAStar = "Deslocar banhos do horário de pico (18h–21h) e alternar a chave para o modo Verão.";
+                } else if (applianceValue === 'ferro') {
+                    powerW = 1000;
+                    sugestaoHorarioAStar = "Acumular roupas para passar em lote único aos sábados pela manhã, evitando picos diários.";
+                }
 
                 const consumoExtraKwh = (powerW * hours * 30) / 1000;
-                const consumoTotalSimulado = 142 + consumoExtraKwh;
+                const somaAtual = consumoReal.filter(v => v !== null).reduce((a, b) => a + b, 0) || 142;
+                const consumoTotalSimulado = somaAtual + consumoExtraKwh;
 
                 try {
                     const resposta = await fetch("http://127.0.0.1:8000/api/previsao", {
@@ -285,35 +460,62 @@
                     const dados = await resposta.json();
 
                     if (resposta.ok) {
-                        // 1. Atualiza os cartões no topo
-                        document.getElementById('estimated-bill').innerText = `R$ ${dados["estimativa_fatura_R$"].toFixed(2)}`;
-                        document.getElementById('current-consumption').innerHTML = `${dados.consumo_inserido_kwh.toFixed(0)} <span class="unit">kWh</span>`;
-                        
-                        // 2. Atualiza a mensagem da simulação
-                        resultDiv.innerText = `Simulação calculada pela API: A nova projeção é de ${dados.projecao_final_mes_kwh} kWh (R$ ${dados["estimativa_fatura_R$"].toFixed(2)}). Dados salvos no MySQL!`;
+                        const faturaEstimada = dados["estimativa_fatura_R$"];
+                        const projecaoKwh = dados.projecao_final_mes_kwh;
 
-                        // 3. Atualiza o Assistente Energia+
+                        const elBill = document.getElementById('estimated-bill');
+                        const elBillStatus = document.getElementById('bill-status');
+                        elBill.innerText = `R$ ${faturaEstimada.toFixed(2)}`;
+                        document.getElementById('current-consumption').innerHTML = `${dados.consumo_inserido_kwh.toFixed(0)} <span class="unit">kWh</span>`;
+                        document.getElementById('current-cost').innerText = `R$ ${(dados.consumo_inserido_kwh * TARIFA_KWH).toFixed(2)} acumulados`;
+
+                        const co2Extra = (consumoExtraKwh * FATOR_SIN_CO2).toFixed(2);
+                        document.getElementById('co2-value').innerHTML = `+${co2Extra} <span class="unit">kg CO₂</span>`;
+                        document.getElementById('co2-subtitle').innerText = `Acréscimo (+${consumoExtraKwh.toFixed(0)} kWh × 0,085 kg/kWh – SIN)`;
+                        document.getElementById('co2-subtitle').style.color = '#F59E0B';
+
+                        let blocoAStarHtml = "";
+                        if (faturaEstimada > metaMensal) {
+                            const excesso = (faturaEstimada - metaMensal).toFixed(2);
+                            elBill.className = "card-value text-danger";
+                            elBillStatus.className = "card-subtitle text-danger";
+                            elBillStatus.innerText = `⚠ R$ ${excesso} acima da meta (R$ ${metaMensal.toFixed(2)})`;
+
+                            blocoAStarHtml = `
+                                <div class="astar-box">
+                                    <strong>Otimização Heurística (Algoritmo A* – RN02):</strong> Sua projeção ultrapassou a meta de <strong>R$ ${metaMensal.toFixed(2)}</strong>. Rotina sugerida de menor custo: <em>${sugestaoHorarioAStar}</em>
+                                </div>
+                            `;
+                        } else {
+                            elBill.className = "card-value text-alert";
+                            elBillStatus.className = "card-subtitle variation-up";
+                            elBillStatus.innerText = `✓ Dentro da meta mensal (R$ ${metaMensal.toFixed(2)})`;
+                        }
+
                         document.getElementById('ai-message').innerHTML = `
-                            <p><strong>Relato Atualizado da IA:</strong> Identificamos que a inclusão de <strong>${applianceName}</strong> por <strong>${hours} hora(s) diária(s)</strong> elevou sua estimativa de fatura para <strong>R$ ${dados["estimativa_fatura_R$"].toFixed(2)}</strong> (${dados.projecao_final_mes_kwh} kWh projetados). Recomendamos moderar o tempo de uso para otimizar seus custos.</p>
+                            <p><strong>Relato Atualizado da IA:</strong> A inclusão de <strong>${applianceName}</strong> por <strong>${hours}h/dia</strong> elevou sua estimativa para <strong>R$ ${faturaEstimada.toFixed(2)}</strong> (${projecaoKwh} kWh projetados) e adiciona <strong>${co2Extra} kg de CO₂</strong>.</p>
+                            ${blocoAStarHtml}
                         `;
 
-                        // 4. ATUALIZA O GRÁFICO VISUALMENTE EM TEMPO REAL!
-                        const mediaDiariaProjetada = (dados.projecao_final_mes_kwh / 30).toFixed(1);
+                        resultDiv.style.color = '#10B981';
+                        resultDiv.innerText = `✓ Calculado pela API Python e salvo no MySQL: ${projecaoKwh} kWh (R$ ${faturaEstimada.toFixed(2)}).`;
+
+                        const mediaDiariaProjetada = (projecaoKwh / 30).toFixed(1);
                         const novaLinhaProjecao = [
                             null, null, null, null, null, null, null, null, null, null, null, null, null, 4.5,
                             ...Array(16).fill(parseFloat(mediaDiariaProjetada))
                         ];
 
                         meugrafico.data.datasets[1].data = novaLinhaProjecao;
-                        meugrafico.update(); // Redesenha a linha no gráfico instantaneamente!
-
-                        alert("Sucesso! Calculado pela API Python, gráfico atualizado e salvo no MySQL.");
+                        meugrafico.update();
                     } else {
-                        alert("Erro na API: " + dados.detail);
+                        resultDiv.style.color = '#EF4444';
+                        resultDiv.innerText = `Erro na API: ${dados.detail}`;
                     }
                 } catch (erro) {
                     console.error("Erro na conexão com o Back-end:", erro);
-                    alert("Atenção: Verifique se o terminal do VS Code está rodando a API Python (uvicorn main:app --reload).");
+                    resultDiv.style.color = '#EF4444';
+                    resultDiv.innerText = "Erro de conexão: inicie o servidor FastAPI (uvicorn main:app --reload) no terminal.";
                 }
             });
         });
