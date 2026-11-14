@@ -43,7 +43,6 @@
 
         .main-content { max-width: 1200px; margin: 2rem auto; padding: 0 1rem; display: flex; flex-direction: column; gap: 1.75rem; }
 
-        /* Barra de Boas-vindas com Nome do Usuário */
         .welcome-bar { background-color: var(--bg-surface); border: 1px solid var(--border-color); border-radius: var(--radius-lg); padding: 1.25rem 1.5rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; }
         .welcome-text h2 { margin-bottom: 0.2rem; font-size: 1.35rem; color: var(--text-primary); }
         .welcome-text p { font-size: 0.92rem; color: var(--text-secondary); }
@@ -66,7 +65,20 @@
         .chart-section { background-color: var(--bg-surface); border-radius: var(--radius-lg); padding: 1.5rem; border: 1px solid var(--border-color); }
         .chart-header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.75rem; margin-bottom: 1rem; }
         .chart-header h2 { margin-bottom: 0; }
+        .chart-actions { display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap; }
         .outlier-badge { background-color: rgba(239, 68, 68, 0.15); color: #FCA5A5; border: 1px solid var(--alert-danger); padding: 0.35rem 0.75rem; border-radius: 999px; font-size: 0.85rem; font-weight: 500; }
+        .btn-discrete { background-color: transparent; color: var(--text-secondary); border: 1px solid var(--border-color); padding: 0.35rem 0.85rem; min-height: 36px; font-size: 0.85rem; }
+        .btn-discrete:hover { color: var(--text-primary); border-color: var(--primary-color); }
+
+        /* Gaveta discreta para lançar leitura (RF01) */
+        .reading-drawer { display: none; background-color: var(--bg-base); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 0.85rem 1rem; margin-bottom: 1rem; align-items: flex-end; gap: 0.75rem; flex-wrap: wrap; }
+        .reading-drawer.open { display: flex; }
+        .reading-drawer .mini-field { display: flex; flex-direction: column; gap: 0.25rem; }
+        .reading-drawer label { margin-bottom: 0; font-size: 0.82rem; }
+        .reading-drawer input { width: 140px; min-height: 40px; padding: 0.45rem 0.7rem; font-size: 0.95rem; }
+        .reading-drawer button { min-height: 40px; padding: 0.45rem 1rem; font-size: 0.9rem; }
+        .reading-feedback { font-size: 0.88rem; color: var(--primary-color); font-weight: 500; }
+
         .chart-container { position: relative; height: 300px; width: 100%; }
 
         .bottom-grid { display: grid; grid-template-columns: 1fr; gap: 1.5rem; align-items: stretch; }
@@ -158,8 +170,26 @@
         <section class="chart-section" aria-labelledby="chart-title">
             <div class="chart-header">
                 <h2 id="chart-title">Histórico e Projeção de Consumo</h2>
-                <span class="outlier-badge" id="outlier-badge">⚠ Consumo fora do padrão: Dia 6 (12 kWh)</span>
+                <div class="chart-actions">
+                    <span class="outlier-badge" id="outlier-badge">⚠ Consumo fora do padrão: Dia 6 (12 kWh)</span>
+                    <button type="button" id="toggle-reading-btn" class="btn-discrete">+ Lançar leitura</button>
+                </div>
             </div>
+
+            <!-- Gaveta oculta por padrão (só abre se clicar em "+ Lançar leitura") -->
+            <form id="reading-drawer" class="reading-drawer">
+                <div class="mini-field">
+                    <label for="reading-day">Dia (15 a 30)</label>
+                    <input type="number" id="reading-day" min="15" max="30" value="15" required>
+                </div>
+                <div class="mini-field">
+                    <label for="reading-kwh">Consumo (kWh)</label>
+                    <input type="number" id="reading-kwh" step="0.1" min="0.5" max="100" placeholder="Ex: 5.2" required>
+                </div>
+                <button type="submit" class="btn-primary">Salvar</button>
+                <span id="reading-feedback" class="reading-feedback" aria-live="polite"></span>
+            </form>
+
             <div class="chart-container">
                 <canvas id="consumptionChart" aria-label="Gráfico de linha mostrando o consumo real versus a projeção até o fim do mês" role="img"></canvas>
             </div>
@@ -214,7 +244,6 @@
             const TARIFA_KWH = 0.95;
             const FATOR_SIN_CO2 = 0.085;
 
-            // Gerenciamento do Nome do Visitante
             let nomeUsuario = localStorage.getItem('energia_user_name') || '';
 
             function atualizarSaudacao(nome) {
@@ -250,18 +279,21 @@
                 document.getElementById('name-form').reset();
             });
 
-            // Gráfico com destaque automático de pico atípico
             const ctx = document.getElementById('consumptionChart').getContext('2d');
             const dias = Array.from({length: 30}, (_, i) => i + 1);
             const consumoReal = [4, 5, 4.5, 6, 7, 12, 5, 4, 4.2, 5.1, 4.8, 6, 5, 4.5, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null];
             let projecaoInicial = [null, null, null, null, null, null, null, null, null, null, null, null, null, 4.5, 5, 4.8, 5.2, 5, 4.5, 5.1, 5, 4.9, 5.2, 5, 4.8, 5, 4.5, 5, 5.1, 5];
 
-            const validos = consumoReal.filter(v => v !== null);
-            const media = validos.reduce((acc, v) => acc + v, 0) / validos.length;
-            const desvio = Math.sqrt(validos.reduce((acc, v) => acc + Math.pow(v - media, 2), 0) / validos.length) || 1;
+            function calcularEstilosPontos(serie) {
+                const validos = serie.filter(v => v !== null);
+                const media = validos.reduce((acc, v) => acc + v, 0) / validos.length;
+                const desvio = Math.sqrt(validos.reduce((acc, v) => acc + Math.pow(v - media, 2), 0) / validos.length) || 1;
+                const cores = serie.map(v => (v !== null && (v - media) / desvio > 2.0) ? '#EF4444' : '#10B981');
+                const raios = serie.map(v => v === null ? 0 : ((v - media) / desvio > 2.0 ? 7 : 4));
+                return { cores, raios };
+            }
 
-            const coresPontos = consumoReal.map(v => (v !== null && (v - media) / desvio > 2.0) ? '#EF4444' : '#10B981');
-            const raiosPontos = consumoReal.map(v => v === null ? 0 : ((v - media) / desvio > 2.0 ? 7 : 4));
+            const estilosIniciais = calcularEstilosPontos(consumoReal);
 
             const meugrafico = new Chart(ctx, {
                 type: 'line',
@@ -276,9 +308,9 @@
                             borderWidth: 2,
                             tension: 0.3,
                             fill: true,
-                            pointBackgroundColor: coresPontos,
-                            pointBorderColor: coresPontos,
-                            pointRadius: raiosPontos,
+                            pointBackgroundColor: estilosIniciais.cores,
+                            pointBorderColor: estilosIniciais.cores,
+                            pointRadius: estilosIniciais.raios,
                             pointHoverRadius: 8
                         },
                         {
@@ -304,6 +336,39 @@
                         y: { grid: { color: '#374151' }, ticks: { color: '#9CA3AF' }, beginAtZero: true }
                     }
                 }
+            });
+
+            // Controle da gaveta discreta de leitura (RF01)
+            const toggleReadingBtn = document.getElementById('toggle-reading-btn');
+            const readingDrawer = document.getElementById('reading-drawer');
+            const readingFeedback = document.getElementById('reading-feedback');
+
+            toggleReadingBtn.addEventListener('click', () => {
+                readingDrawer.classList.toggle('open');
+                toggleReadingBtn.innerText = readingDrawer.classList.contains('open') ? 'Fechar' : '+ Lançar leitura';
+            });
+
+            readingDrawer.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const day = parseInt(document.getElementById('reading-day').value);
+                const kwh = parseFloat(document.getElementById('reading-kwh').value);
+                if (!day || !kwh || day < 1 || day > 30) return;
+
+                consumoReal[day - 1] = kwh;
+                const novosEstilos = calcularEstilosPontos(consumoReal);
+
+                meugrafico.data.datasets[0].data = consumoReal;
+                meugrafico.data.datasets[0].pointBackgroundColor = novosEstilos.cores;
+                meugrafico.data.datasets[0].pointBorderColor = novosEstilos.cores;
+                meugrafico.data.datasets[0].pointRadius = novosEstilos.raios;
+                meugrafico.update();
+
+                const somaReal = consumoReal.filter(v => v !== null).reduce((a, b) => a + b, 0);
+                document.getElementById('current-consumption').innerHTML = `${somaReal.toFixed(1)} <span class="unit">kWh</span>`;
+                document.getElementById('current-cost').innerText = `R$ ${(somaReal * TARIFA_KWH).toFixed(2)} acumulados`;
+
+                readingFeedback.innerText = `✓ Dia ${day} (${kwh} kWh) adicionado!`;
+                document.getElementById('reading-kwh').value = '';
             });
 
             // Leitura em Voz Alta
@@ -419,7 +484,8 @@
                 }
 
                 const consumoExtraKwh = (powerW * hours * 30) / 1000;
-                const consumoTotalSimulado = 142 + consumoExtraKwh;
+                const somaAtual = consumoReal.filter(v => v !== null).reduce((a, b) => a + b, 0) || 142;
+                const consumoTotalSimulado = somaAtual + consumoExtraKwh;
 
                 try {
                     const resposta = await fetch("http://127.0.0.1:8000/api/previsao", {
@@ -446,13 +512,11 @@
                         document.getElementById('current-consumption').innerHTML = `${dados.consumo_inserido_kwh.toFixed(0)} <span class="unit">kWh</span>`;
                         document.getElementById('current-cost').innerText = `R$ ${(dados.consumo_inserido_kwh * TARIFA_KWH).toFixed(2)} acumulados`;
 
-                        // Impacto Ambiental Dinâmico
                         const co2Extra = (consumoExtraKwh * FATOR_SIN_CO2).toFixed(2);
                         document.getElementById('co2-value').innerHTML = `+${co2Extra} <span class="unit">kg CO₂</span>`;
                         document.getElementById('co2-subtitle').innerText = `Acréscimo estimado (+${consumoExtraKwh.toFixed(0)} kWh no mês)`;
                         document.getElementById('co2-subtitle').style.color = '#F59E0B';
 
-                        // Verificação da Meta e Recomendação de Otimização
                         let blocoSugestao = "";
                         if (faturaEstimada > metaMensal) {
                             const excesso = (faturaEstimada - metaMensal).toFixed(2);
