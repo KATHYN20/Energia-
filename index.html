@@ -488,7 +488,7 @@
                 const consumoTotalSimulado = somaAtual + consumoExtraKwh;
 
                 try {
-                    const resposta = await fetch("http://127.0.0.1:8000/api/previsao", {
+                    const resposta = await fetch("https://energia-api-mhtp.onrender.com/api/previsao", {
                         method: "POST",
                         headers: {
                             "Content-Type": "application/json"
